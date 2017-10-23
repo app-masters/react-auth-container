@@ -4,8 +4,10 @@ import store from './auth.store.js';
 import { Provider } from 'react-redux';
 
 class AuthContainer extends Component {
+    componentDidMount () {
+        Window.fetch = Window.fetch.bind(this);
+    }
     render () {
-        console.log(window.fetch);
         return (
             <Provider store={store}>
                 <Auth {...this.props} />
