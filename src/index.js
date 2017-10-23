@@ -5,7 +5,7 @@ import { Provider } from 'react-redux';
 
 class AuthContainer extends Component {
     componentDidMount () {
-        Window.fetch = Window.fetch.bind(this);
+        Window.fetch = this.props.window.fetch.bind(this);
     }
     render () {
         return (
