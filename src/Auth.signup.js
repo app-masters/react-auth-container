@@ -18,7 +18,7 @@ class Login extends Component {
     _handleEnterPress (e) {
         if (e.key === "Enter") {
             const { email, password, rePassword } = this.props.input;
-            this.props.signupUser({ email, password, rePassword }, this.props.onSignupSuccess);
+            this.props.signupUser({ email, password, rePassword }, this.props.onSignupSuccess, this.props.onSignupFail);
         }
     }
     render () {
