@@ -9,14 +9,6 @@
   },
   "author": "Matheus",
   "license": "MIT",
-  "bundledDependencies": [
-    "babel-preset-env",
-    "babel-cli",
-    "babel-loader",
-    "babel-preset-es2015",
-    "babel-preset-stage-1",
-    "babel-preset-react"
-  ],
   "dependencies": {
     "babel-preset-env": "^1.6.1",
     "immutability-helper": "^2.4.0",
@@ -26,7 +18,8 @@
     "react-redux": "^5.0.6",
     "react-router": "^4.2.0",
     "redux": "^3.7.2",
-    "redux-thunk": "^2.2.0"
+    "redux-thunk": "^2.2.0",
+    "whatwg-fetch": "^2.0.3"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
