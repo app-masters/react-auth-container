@@ -6,11 +6,13 @@ import Signup from './Auth.signup.js';
 
 class Auth extends Component {
     render () {
-        console.log('render', this.props);
-
         return (
             <div>
-                <Route location={this.props.location} exact path='/' render={() => (<Login {...this.props} />)} />
+                <Route location={this.props.location} exact path='/' render={() => (
+                        this.props.isAuthenticated
+                        ? <Redirect to='/' />
+                        : <Signup {...this.props} />
+                    )} />
                 <Route location={this.props.location} exact path='/signup' render={() => (
                         this.props.isAuthenticated
                         ? <Redirect to='/' />

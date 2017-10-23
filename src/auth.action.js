@@ -5,7 +5,7 @@ export const inputChanged = (id, value) => {
     return {type: ACTIONS.AUTH_INPUT_CHANGED, payload: {id: id, value: value}};
 };
 
-export const loginUser = ({email, password}, onLoginSuccess) => {
+export const loginUser = ({email, password}, onLoginSuccess, onLoginFail) => {
     return (dispatch, getState) => {
         dispatch({type: ACTIONS.AUTH_EMAIL_FORMAT_ERROR, payload: null});
         dispatch({type: ACTIONS.AUTH_EMPTY_PASSWORD_ERROR, payload: null});
@@ -27,13 +27,12 @@ export const loginUser = ({email, password}, onLoginSuccess) => {
                     'Authorization': response.token
                 });
                 Http.setEndpointParam('{_id}', response.user._id);
-                loginUserSuccess(dispatch, response);
-                onLoginSuccess(response);
+                loginUserSuccess(dispatch, response, onLoginSuccess);
             })
             .catch((error) => {
                 loginUserFail(dispatch, error);
                 if (error.message === "NoUserFound") {
-                    loginError(dispatch, "Usuário não encontrado");
+                    loginError(dispatch, "Usuário não encontrado", onLoginFail);
                 } else if (error.message === "WrongPassword") {
                     loginError(dispatch, "Senha incorreta");
                 } else if (error.name === 'ExpiredError') {
@@ -94,8 +93,7 @@ export const signupUser = ({email, password, rePassword}, redirect, onSignupSucc
                     'Authorization': response.token
                 });
                 Http.setEndpointParam('{_id}', response.user._id);
-                signupUserSuccess(dispatch, response);
-                onSignupSuccess(response);
+                signupUserSuccess(dispatch, response, onSignupSuccess);
             })
             .catch((error) => signupUserFail(dispatch, error));
         }
@@ -113,24 +111,28 @@ export const logoutUser = () => {
         dispatch({type: ACTIONS.AUTH_LOGOUT_USER});
     };
 };
-const signupUserFail = (dispatch, error) => {
+const signupUserFail = (dispatch, error, onSignupFail) => {
     dispatch({type: ACTIONS.AUTH_SIGNUP_USER_FAIL, payload: error});
+    onSignupFail(error);
 };
 
-const signupUserSuccess = (dispatch, user) => {
+const signupUserSuccess = (dispatch, user, onSignupSuccess) => {
     dispatch({type: ACTIONS.AUTH_SIGNUP_USER_SUCCESS, payload: user});
+    onSignupSuccess(user);
 };
 
 const loginUserFail = (dispatch, error) => {
     dispatch({type: ACTIONS.AUTH_LOGIN_USER_FAIL, payload: error});
 };
 
-const loginError = (dispatch, error) => {
+const loginError = (dispatch, error, onLoginFail) => {
     dispatch({type: ACTIONS.AUTH_ERROR, payload: error});
+    onLoginFail(error);
 };
 
-const loginUserSuccess = (dispatch, user) => {
+const loginUserSuccess = (dispatch, user, onLoginSuccess) => {
     dispatch({type: ACTIONS.AUTH_LOGIN_USER_SUCCESS, payload: user});
+    onLoginSuccess(user);
 };
 
 const validateInput = (dispatch, { email, password }) => {
