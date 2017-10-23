@@ -1,0 +1,39 @@
+{
+  "name": "auth-appmasters",
+  "version": "1.0.0",
+  "description": "auth component made by matheus",
+  "main": "dist/index.js",
+  "scripts": {
+    "buildapp": "rm -rf dist/ && webpack -p",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Matheus",
+  "license": "MIT",
+  "bundledDependencies": [
+    "babel-preset-env",
+    "babel-cli",
+    "babel-loader",
+    "babel-preset-es2015",
+    "babel-preset-stage-1",
+    "babel-preset-react"
+  ],
+  "dependencies": {
+    "babel-preset-env": "^1.6.1",
+    "immutability-helper": "^2.4.0",
+    "jslib": "git+https://github.com/app-masters/js-lib.git",
+    "keymirror": "^0.1.1",
+    "react": "^16.0.0",
+    "react-redux": "^5.0.6",
+    "react-router": "^4.2.0",
+    "redux": "^3.7.2",
+    "redux-thunk": "^2.2.0"
+  },
+  "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-loader": "^7.1.2",
+    "babel-preset-es2015": "^6.24.1",
+    "babel-preset-react": "^6.24.1",
+    "babel-preset-stage-1": "^6.24.1",
+    "webpack": "^3.8.1"
+  }
+}
