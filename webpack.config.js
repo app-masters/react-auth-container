@@ -4,6 +4,7 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: 'index.js',
+        sourceMapFilename: 'index.map',
         library: 'jslib',
         libraryTarget: 'umd'
     },
