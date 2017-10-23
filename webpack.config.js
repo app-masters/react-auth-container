@@ -8,6 +8,11 @@ module.exports = {
         library: 'jslib',
         libraryTarget: 'umd'
     },
+    externals: [
+        {
+            "window": "window"
+        }
+    ],
     module: {
         rules: [
             {

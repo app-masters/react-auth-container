@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import Auth from './Auth';
 import store from './auth.store.js';
 import { Provider } from 'react-redux';
-import ReactDOM from 'react-dom';
 class AuthContainer extends Component {
     render () {
         return (
