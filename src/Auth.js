@@ -3,8 +3,12 @@ import { Route, Redirect } from 'react-router';
 import { connect } from 'react-redux';
 import Login from './Auth.login.js';
 import Signup from './Auth.signup.js';
-
+import { Http } from 'jslib';
 class Auth extends Component {
+    componentWillMount () {
+        Http.setBaseUrl(this.props.baseUrl);
+        Http.setHeaders(this.props.httpHeaders);
+    }
     render () {
         console.log('render', this.props);
 
