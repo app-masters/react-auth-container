@@ -6,7 +6,7 @@ import Signup from './Auth.signup.js';
 import { Http } from 'jslib';
 class Auth extends Component {
     componentWillMount () {
-        Http.setBaseUrl(this.props.baseUrl);
+        Http.setBaseURL(this.props.baseUrl);
         Http.setHeaders(this.props.httpHeaders);
     }
     render () {
