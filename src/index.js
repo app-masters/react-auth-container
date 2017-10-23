@@ -5,6 +5,7 @@ import { Provider } from 'react-redux';
 
 class AuthContainer extends Component {
     render () {
+        console.log(Window.fetch);
         return (
             <Provider store={store}>
                 <Auth {...this.props} />
