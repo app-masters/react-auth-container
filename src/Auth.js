@@ -3,17 +3,18 @@ import { Route, Redirect } from 'react-router';
 import { connect } from 'react-redux';
 import Login from './Auth.login.js';
 import Signup from './Auth.signup.js';
-import { Http } from 'jslib';
+import Http from './Library/Http';
+
 class Auth extends Component {
     componentWillMount () {
-        console.log('componentWillMount', this.props.baseUrl);
         Http.setBaseURL(this.props.baseUrl);
-        console.log('componentWillMount', this.props.httpHeaders);
-        Http.setHeaders(this.props.httpHeaders);
+        Http.setHeaders({
+            'content-type': 'application/json',
+            'client': this.props.client,
+            'admin-version': this.props.appVersion
+        });
     }
     render () {
-        console.log('render', this.props);
-
         return (
             <div>
                 <Route location={this.props.location} exact path='/' render={() => (<Login {...this.props} />)} />

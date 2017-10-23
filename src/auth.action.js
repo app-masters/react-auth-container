@@ -1,5 +1,5 @@
 import { ACTIONS } from './auth.actionTypes.js';
-import { Http, Rollbar } from 'jslib';
+import Http from './Library/Http';
 
 export const inputChanged = (id, value) => {
     return {type: ACTIONS.AUTH_INPUT_CHANGED, payload: {id: id, value: value}};

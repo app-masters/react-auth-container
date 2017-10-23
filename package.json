@@ -4,7 +4,7 @@
   "description": "auth component made by matheus",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rm -rf dist/ && webpack -p",
+    "build": "rm -rf dist/ && webpack",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Matheus",
@@ -12,7 +12,6 @@
   "dependencies": {
     "babel-preset-env": "^1.6.1",
     "immutability-helper": "^2.4.0",
-    "jslib": "git+https://github.com/app-masters/js-lib.git",
     "keymirror": "^0.1.1",
     "react": "^16.0.0",
     "react-redux": "^5.0.6",
