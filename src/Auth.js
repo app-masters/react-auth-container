@@ -13,6 +13,8 @@ class Auth extends Component {
             'client': this.props.client,
             'admin-version': this.props.appVersion
         });
+        console.log(this.props.onLoginFail)
+        console.log(this.props.onLoginSuccess)
         this.props.isUserInLocalStorage(this.props.onLoginSuccess, this.props.onLoginFail)
     }
     render () {
