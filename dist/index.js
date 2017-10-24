@@ -3028,7 +3028,7 @@ var Auth = function (_Component) {
                 'client': this.props.client,
                 'admin-version': this.props.appVersion
             });
-            this.props.isUserInLocalStorage(this.props.onLoginFail);
+            this.props.isUserInLocalStorage(this.props.onLoginSuccess, this.props.onLoginFail);
         }
     }, {
         key: 'render',
