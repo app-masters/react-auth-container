@@ -3030,7 +3030,7 @@ var Auth = function (_Component) {
             });
             console.log(this.props.onLoginFail);
             console.log(this.props.onLoginSuccess);
-            this.props.isUserInLocalStorage(this.props.onLoginSuccess, this.props.onLoginFail);
+            this.props.isUserAuthenticated(this.props.onLoginSuccess, this.props.onLoginFail);
         }
     }, {
         key: 'render',
