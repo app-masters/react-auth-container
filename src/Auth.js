@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import Login from './Auth.login.js';
 import Signup from './Auth.signup.js';
 import Http from './Library/Http';
-
+import { isUserInLocalStorage } from './auth.action';
 class Auth extends Component {
     componentWillMount () {
         Http.setBaseURL(this.props.baseUrl);
@@ -13,6 +13,7 @@ class Auth extends Component {
             'client': this.props.client,
             'admin-version': this.props.appVersion
         });
+        this.props.isUserInLocalStorage(this.props.onLoginFail)
     }
     render () {
         return (
@@ -33,4 +34,4 @@ const mapStateToProps = ({auth}) => {
         isAuthenticated: auth.isAuthenticated
     };
 };
-export default connect(mapStateToProps)(Auth);
+export default connect(mapStateToProps, isUserInLocalStorage)(Auth);

@@ -10,7 +10,7 @@ export const loginUser = ({email, password}, onLoginSuccess, onLoginFail) => {
         dispatch({type: ACTIONS.AUTH_EMAIL_FORMAT_ERROR, payload: null});
         dispatch({type: ACTIONS.AUTH_EMPTY_PASSWORD_ERROR, payload: null});
         if (!validateInput(dispatch, {email, password})) {
-            loginUserFail(dispatch, 'Invalid Credentials');
+            loginUserFail(dispatch, 'Invalid Credentials', onLoginFail);
         } else {
             dispatch({type: ACTIONS.AUTH_LOGIN_USER});
             Http.post('/login', {
@@ -30,25 +30,25 @@ export const loginUser = ({email, password}, onLoginSuccess, onLoginFail) => {
                 loginUserSuccess(dispatch, response, onLoginSuccess);
             })
             .catch((error) => {
-                loginUserFail(dispatch, error);
+                loginUserFail(dispatch, error, onLoginFail);
                 if (error.message === "NoUserFound") {
                     loginError(dispatch, "Usuário não encontrado", onLoginFail);
-                } else if (error.message === "WrongPassword") {
-                    loginError(dispatch, "Senha incorreta");
-                } else if (error.name === 'ExpiredError') {
-                    loginError(dispatch, "Sua sessão expirou, faça login novamente");
+                } else if (error.message === "WrongPassword", onLoginFail) {
+                    loginError(dispatch, "Senha incorreta", onLoginFail);
+                } else if (error.name === 'ExpiredError', onLoginFail) {
+                    loginError(dispatch, "Sua sessão expirou, faça login novamente", onLoginFail);
                 } else {
                     let message;
                     message = (error.message ? error.message : "none");
                     Rollbar.error(new Error(message));
-                    loginError(dispatch, "Houve um erro inesperado e os programadores responsáveis já foram avisados. \n\n Detalhes técnicos: " + message);
+                    loginError(dispatch, "Houve um erro inesperado e os programadores responsáveis já foram avisados. \n\n Detalhes técnicos: " + message, onLoginFail);
                 }
             });
         }
     };
 };
 
-export const isUserInLocalStorage = () => {
+export const isUserInLocalStorage = (onLoginSuccess, onLoginFail) => {
     return (dispatch) => {
         dispatch({type: ACTIONS.AUTH_IS_USER_AUTHENTICATED});
         var data = localStorage.getItem('auth');
@@ -61,9 +61,9 @@ export const isUserInLocalStorage = () => {
                 'Authorization': data.token
             });
             Http.setEndpointParam('{_id}', data.user._id);
-            loginUserSuccess(dispatch, data);
+            loginUserSuccess(dispatch, data, onLoginSuccess);
         } else {
-            loginUserFail(dispatch, null);
+            loginUserFail(dispatch, null, onLoginFail);
         }
     };
 };
@@ -95,7 +95,7 @@ export const signupUser = ({email, password, rePassword}, redirect, onSignupSucc
                 Http.setEndpointParam('{_id}', response.user._id);
                 signupUserSuccess(dispatch, response, onSignupSuccess);
             })
-            .catch((error) => signupUserFail(dispatch, error));
+            .catch((error) => signupUserFail(dispatch, error, onSignupFail));
         }
     };
 };
@@ -121,8 +121,9 @@ const signupUserSuccess = (dispatch, user, onSignupSuccess) => {
     onSignupSuccess(user);
 };
 
-const loginUserFail = (dispatch, error) => {
+const loginUserFail = (dispatch, error, onLoginFail) => {
     dispatch({type: ACTIONS.AUTH_LOGIN_USER_FAIL, payload: error});
+    onLoginFail(error)
 };
 
 const loginError = (dispatch, error, onLoginFail) => {

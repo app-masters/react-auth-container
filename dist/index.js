@@ -500,8 +500,8 @@ var createPath = function createPath(location) {
 "use strict";
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "a", function() { return createLocation; });
 /* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "b", function() { return locationsAreEqual; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_resolve_pathname__ = __webpack_require__(18);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_value_equal__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_resolve_pathname__ = __webpack_require__(19);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_value_equal__ = __webpack_require__(20);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__PathUtils__ = __webpack_require__(5);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
@@ -576,7 +576,7 @@ var locationsAreEqual = function locationsAreEqual(a, b) {
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_Provider__ = __webpack_require__(58);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_connectAdvanced__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__components_connectAdvanced__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__connect_connect__ = __webpack_require__(60);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Provider", function() { return __WEBPACK_IMPORTED_MODULE_0__components_Provider__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "createProvider", function() { return __WEBPACK_IMPORTED_MODULE_0__components_Provider__["a"]; });
@@ -1162,6 +1162,194 @@ function isPlainObject(value) {
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+exports.logoutUser = exports.signupUser = exports.isUserInLocalStorage = exports.loginUser = exports.inputChanged = undefined;
+
+var _authActionTypes = __webpack_require__(34);
+
+var _Http = __webpack_require__(35);
+
+var _Http2 = _interopRequireDefault(_Http);
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var inputChanged = exports.inputChanged = function inputChanged(id, value) {
+    return { type: _authActionTypes.ACTIONS.AUTH_INPUT_CHANGED, payload: { id: id, value: value } };
+};
+
+var loginUser = exports.loginUser = function loginUser(_ref, onLoginSuccess, onLoginFail) {
+    var email = _ref.email,
+        password = _ref.password;
+
+    return function (dispatch, getState) {
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMAIL_FORMAT_ERROR, payload: null });
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMPTY_PASSWORD_ERROR, payload: null });
+        if (!validateInput(dispatch, { email: email, password: password })) {
+            loginUserFail(dispatch, 'Invalid Credentials', onLoginFail);
+        } else {
+            dispatch({ type: _authActionTypes.ACTIONS.AUTH_LOGIN_USER });
+            _Http2.default.post('/login', {
+                email: email,
+                password: password
+            }).then(function (response) {
+                console.log(response);
+                localStorage.setItem('auth', JSON.stringify(response));
+                _Http2.default.setHeaders({
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'client': 'web',
+                    'Authorization': response.token
+                });
+                _Http2.default.setEndpointParam('{_id}', response.user._id);
+                loginUserSuccess(dispatch, response, onLoginSuccess);
+            }).catch(function (error) {
+                loginUserFail(dispatch, error, onLoginFail);
+                if (error.message === "NoUserFound") {
+                    loginError(dispatch, "Usuário não encontrado", onLoginFail);
+                } else if (error.message === "WrongPassword", onLoginFail) {
+                    loginError(dispatch, "Senha incorreta", onLoginFail);
+                } else if (error.name === 'ExpiredError', onLoginFail) {
+                    loginError(dispatch, "Sua sessão expirou, faça login novamente", onLoginFail);
+                } else {
+                    var message = void 0;
+                    message = error.message ? error.message : "none";
+                    Rollbar.error(new Error(message));
+                    loginError(dispatch, "Houve um erro inesperado e os programadores responsáveis já foram avisados. \n\n Detalhes técnicos: " + message, onLoginFail);
+                }
+            });
+        }
+    };
+};
+
+var isUserInLocalStorage = exports.isUserInLocalStorage = function isUserInLocalStorage(onLoginSuccess, onLoginFail) {
+    return function (dispatch) {
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_IS_USER_AUTHENTICATED });
+        var data = localStorage.getItem('auth');
+        if (data !== null) {
+            data = JSON.parse(data);
+            _Http2.default.setHeaders({
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'client': 'web',
+                'Authorization': data.token
+            });
+            _Http2.default.setEndpointParam('{_id}', data.user._id);
+            loginUserSuccess(dispatch, data, onLoginSuccess);
+        } else {
+            loginUserFail(dispatch, null, onLoginFail);
+        }
+    };
+};
+
+var signupUser = exports.signupUser = function signupUser(_ref2, redirect, onSignupSuccess) {
+    var email = _ref2.email,
+        password = _ref2.password,
+        rePassword = _ref2.rePassword;
+
+    return function (dispatch) {
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMAIL_FORMAT_ERROR, payload: null });
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMPTY_PASSWORD_ERROR, payload: null });
+        if (!validateInput(dispatch, { email: email, password: password }) || !checkPasswordMatch({ password: password, rePassword: rePassword })) {
+            signupUserFail(dispatch, 'Invalid Credentials');
+
+            if (!checkPasswordMatch({ password: password, rePassword: rePassword })) {
+                dispatch({ type: _authActionTypes.ACTIONS.AUTH_PASSWORD_UNMATCHED, payload: "Senhas não batem" });
+            }
+        } else {
+            dispatch({ type: _authActionTypes.ACTIONS.AUTH_SIGNUP_USER });
+            _Http2.default.post('/signup', {
+                email: email,
+                password: password
+            }).then(function (response) {
+                localStorage.setItem('auth', JSON.stringify(response));
+                _Http2.default.setHeaders({
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'client': 'web',
+                    'Authorization': response.token
+                });
+                _Http2.default.setEndpointParam('{_id}', response.user._id);
+                signupUserSuccess(dispatch, response, onSignupSuccess);
+            }).catch(function (error) {
+                return signupUserFail(dispatch, error, onSignupFail);
+            });
+        }
+    };
+};
+
+var logoutUser = exports.logoutUser = function logoutUser() {
+    return function (dispatch) {
+        localStorage.clear();
+        _Http2.default.setHeaders({
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'client': 'web'
+        });
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_LOGOUT_USER });
+    };
+};
+var signupUserFail = function signupUserFail(dispatch, error, onSignupFail) {
+    dispatch({ type: _authActionTypes.ACTIONS.AUTH_SIGNUP_USER_FAIL, payload: error });
+    onSignupFail(error);
+};
+
+var signupUserSuccess = function signupUserSuccess(dispatch, user, onSignupSuccess) {
+    dispatch({ type: _authActionTypes.ACTIONS.AUTH_SIGNUP_USER_SUCCESS, payload: user });
+    onSignupSuccess(user);
+};
+
+var loginUserFail = function loginUserFail(dispatch, error, onLoginFail) {
+    dispatch({ type: _authActionTypes.ACTIONS.AUTH_LOGIN_USER_FAIL, payload: error });
+    onLoginFail(error);
+};
+
+var loginError = function loginError(dispatch, error, onLoginFail) {
+    dispatch({ type: _authActionTypes.ACTIONS.AUTH_ERROR, payload: error });
+    onLoginFail(error);
+};
+
+var loginUserSuccess = function loginUserSuccess(dispatch, user, onLoginSuccess) {
+    dispatch({ type: _authActionTypes.ACTIONS.AUTH_LOGIN_USER_SUCCESS, payload: user });
+    onLoginSuccess(user);
+};
+
+var validateInput = function validateInput(dispatch, _ref3) {
+    var email = _ref3.email,
+        password = _ref3.password;
+
+    var validated = true;
+    var regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+
+    if (!regex.test(email)) {
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMAIL_FORMAT_ERROR, payload: "Formato de email incorreto" });
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_ERROR, payload: "Formato de email incorreto" });
+        validated = false;
+    }
+
+    if (password === '') {
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMPTY_PASSWORD_ERROR, payload: "Senha invalida" });
+        dispatch({ type: _authActionTypes.ACTIONS.AUTH_ERROR, payload: "Senha invalida" });
+        validated = false;
+    }
+    return validated;
+};
+
+var checkPasswordMatch = function checkPasswordMatch(_ref4) {
+    var password = _ref4.password,
+        rePassword = _ref4.rePassword;
+
+    return password === rePassword;
+};
+
+/***/ }),
+/* 18 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
 /* WEBPACK VAR INJECTION */(function(process) {/**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -1227,7 +1415,7 @@ module.exports = warning;
 /* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(1)))
 
 /***/ }),
-/* 18 */
+/* 19 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1304,7 +1492,7 @@ function resolvePathname(to) {
 /* harmony default export */ __webpack_exports__["default"] = (resolvePathname);
 
 /***/ }),
-/* 19 */
+/* 20 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1349,7 +1537,7 @@ function valueEqual(a, b) {
 /* harmony default export */ __webpack_exports__["default"] = (valueEqual);
 
 /***/ }),
-/* 20 */
+/* 21 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1415,7 +1603,7 @@ var isExtraneousPopstateEvent = function isExtraneousPopstateEvent(event) {
 };
 
 /***/ }),
-/* 21 */
+/* 22 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1564,7 +1752,7 @@ Route.childContextTypes = {
 /* harmony default export */ __webpack_exports__["a"] = (Route);
 
 /***/ }),
-/* 22 */
+/* 23 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -1636,7 +1824,7 @@ module.exports = function hoistNonReactStatics(targetComponent, sourceComponent,
 
 
 /***/ }),
-/* 23 */
+/* 24 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -1660,19 +1848,19 @@ var storeShape = __WEBPACK_IMPORTED_MODULE_0_prop_types___default.a.shape({
 });
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {/* harmony export (immutable) */ __webpack_exports__["a"] = connectAdvanced;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_hoist_non_react_statics__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_hoist_non_react_statics__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_hoist_non_react_statics___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_hoist_non_react_statics__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_invariant__ = __webpack_require__(4);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_invariant___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_invariant__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react__ = __webpack_require__(0);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils_Subscription__ = __webpack_require__(59);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils_PropTypes__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__utils_PropTypes__ = __webpack_require__(24);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -1965,17 +2153,17 @@ selectorFactory) {
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(1)))
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
-/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__createStore__ = __webpack_require__(26);
+/* WEBPACK VAR INJECTION */(function(process) {/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__createStore__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__combineReducers__ = __webpack_require__(75);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__bindActionCreators__ = __webpack_require__(76);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__applyMiddleware__ = __webpack_require__(77);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__compose__ = __webpack_require__(30);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__utils_warning__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__compose__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__utils_warning__ = __webpack_require__(30);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "createStore", function() { return __WEBPACK_IMPORTED_MODULE_0__createStore__["b"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "combineReducers", function() { return __WEBPACK_IMPORTED_MODULE_1__combineReducers__["a"]; });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "bindActionCreators", function() { return __WEBPACK_IMPORTED_MODULE_2__bindActionCreators__["a"]; });
@@ -2002,7 +2190,7 @@ if (process.env.NODE_ENV !== 'production' && typeof isCrushed.name === 'string' 
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(1)))
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2261,7 +2449,7 @@ var ActionTypes = {
 }
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2275,7 +2463,7 @@ var Symbol = __WEBPACK_IMPORTED_MODULE_0__root_js__["a" /* default */].Symbol;
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports) {
 
 var g;
@@ -2302,7 +2490,7 @@ module.exports = g;
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2330,7 +2518,7 @@ function warning(message) {
 }
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2369,14 +2557,14 @@ function compose() {
 }
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {/* harmony export (immutable) */ __webpack_exports__["a"] = wrapMapToPropsConstant;
 /* unused harmony export getDependsOnOwnProps */
 /* harmony export (immutable) */ __webpack_exports__["b"] = wrapMapToPropsFunc;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_verifyPlainObject__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_verifyPlainObject__ = __webpack_require__(33);
 
 
 function wrapMapToPropsConstant(getConstant) {
@@ -2447,7 +2635,7 @@ function wrapMapToPropsFunc(mapToProps, methodName) {
 /* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(1)))
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -2462,193 +2650,6 @@ function verifyPlainObject(value, displayName, methodName) {
     Object(__WEBPACK_IMPORTED_MODULE_1__warning__["a" /* default */])(methodName + '() in ' + displayName + ' must return a plain object. Instead received ' + value + '.');
   }
 }
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-Object.defineProperty(exports, "__esModule", {
-    value: true
-});
-exports.logoutUser = exports.signupUser = exports.isUserInLocalStorage = exports.loginUser = exports.inputChanged = undefined;
-
-var _authActionTypes = __webpack_require__(34);
-
-var _Http = __webpack_require__(35);
-
-var _Http2 = _interopRequireDefault(_Http);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-var inputChanged = exports.inputChanged = function inputChanged(id, value) {
-    return { type: _authActionTypes.ACTIONS.AUTH_INPUT_CHANGED, payload: { id: id, value: value } };
-};
-
-var loginUser = exports.loginUser = function loginUser(_ref, onLoginSuccess, onLoginFail) {
-    var email = _ref.email,
-        password = _ref.password;
-
-    return function (dispatch, getState) {
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMAIL_FORMAT_ERROR, payload: null });
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMPTY_PASSWORD_ERROR, payload: null });
-        if (!validateInput(dispatch, { email: email, password: password })) {
-            loginUserFail(dispatch, 'Invalid Credentials');
-        } else {
-            dispatch({ type: _authActionTypes.ACTIONS.AUTH_LOGIN_USER });
-            _Http2.default.post('/login', {
-                email: email,
-                password: password
-            }).then(function (response) {
-                console.log(response);
-                localStorage.setItem('auth', JSON.stringify(response));
-                _Http2.default.setHeaders({
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'client': 'web',
-                    'Authorization': response.token
-                });
-                _Http2.default.setEndpointParam('{_id}', response.user._id);
-                loginUserSuccess(dispatch, response, onLoginSuccess);
-            }).catch(function (error) {
-                loginUserFail(dispatch, error);
-                if (error.message === "NoUserFound") {
-                    loginError(dispatch, "Usuário não encontrado", onLoginFail);
-                } else if (error.message === "WrongPassword") {
-                    loginError(dispatch, "Senha incorreta");
-                } else if (error.name === 'ExpiredError') {
-                    loginError(dispatch, "Sua sessão expirou, faça login novamente");
-                } else {
-                    var message = void 0;
-                    message = error.message ? error.message : "none";
-                    Rollbar.error(new Error(message));
-                    loginError(dispatch, "Houve um erro inesperado e os programadores responsáveis já foram avisados. \n\n Detalhes técnicos: " + message);
-                }
-            });
-        }
-    };
-};
-
-var isUserInLocalStorage = exports.isUserInLocalStorage = function isUserInLocalStorage() {
-    return function (dispatch) {
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_IS_USER_AUTHENTICATED });
-        var data = localStorage.getItem('auth');
-        if (data !== null) {
-            data = JSON.parse(data);
-            _Http2.default.setHeaders({
-                'Accept': 'application/json',
-                'Content-Type': 'application/json',
-                'client': 'web',
-                'Authorization': data.token
-            });
-            _Http2.default.setEndpointParam('{_id}', data.user._id);
-            loginUserSuccess(dispatch, data);
-        } else {
-            loginUserFail(dispatch, null);
-        }
-    };
-};
-
-var signupUser = exports.signupUser = function signupUser(_ref2, redirect, onSignupSuccess) {
-    var email = _ref2.email,
-        password = _ref2.password,
-        rePassword = _ref2.rePassword;
-
-    return function (dispatch) {
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMAIL_FORMAT_ERROR, payload: null });
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMPTY_PASSWORD_ERROR, payload: null });
-        if (!validateInput(dispatch, { email: email, password: password }) || !checkPasswordMatch({ password: password, rePassword: rePassword })) {
-            signupUserFail(dispatch, 'Invalid Credentials');
-
-            if (!checkPasswordMatch({ password: password, rePassword: rePassword })) {
-                dispatch({ type: _authActionTypes.ACTIONS.AUTH_PASSWORD_UNMATCHED, payload: "Senhas não batem" });
-            }
-        } else {
-            dispatch({ type: _authActionTypes.ACTIONS.AUTH_SIGNUP_USER });
-            _Http2.default.post('/signup', {
-                email: email,
-                password: password
-            }).then(function (response) {
-                localStorage.setItem('auth', JSON.stringify(response));
-                _Http2.default.setHeaders({
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                    'client': 'web',
-                    'Authorization': response.token
-                });
-                _Http2.default.setEndpointParam('{_id}', response.user._id);
-                signupUserSuccess(dispatch, response, onSignupSuccess);
-            }).catch(function (error) {
-                return signupUserFail(dispatch, error);
-            });
-        }
-    };
-};
-
-var logoutUser = exports.logoutUser = function logoutUser() {
-    return function (dispatch) {
-        localStorage.clear();
-        _Http2.default.setHeaders({
-            'Accept': 'application/json',
-            'Content-Type': 'application/json',
-            'client': 'web'
-        });
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_LOGOUT_USER });
-    };
-};
-var signupUserFail = function signupUserFail(dispatch, error, onSignupFail) {
-    dispatch({ type: _authActionTypes.ACTIONS.AUTH_SIGNUP_USER_FAIL, payload: error });
-    onSignupFail(error);
-};
-
-var signupUserSuccess = function signupUserSuccess(dispatch, user, onSignupSuccess) {
-    dispatch({ type: _authActionTypes.ACTIONS.AUTH_SIGNUP_USER_SUCCESS, payload: user });
-    onSignupSuccess(user);
-};
-
-var loginUserFail = function loginUserFail(dispatch, error) {
-    dispatch({ type: _authActionTypes.ACTIONS.AUTH_LOGIN_USER_FAIL, payload: error });
-};
-
-var loginError = function loginError(dispatch, error, onLoginFail) {
-    dispatch({ type: _authActionTypes.ACTIONS.AUTH_ERROR, payload: error });
-    onLoginFail(error);
-};
-
-var loginUserSuccess = function loginUserSuccess(dispatch, user, onLoginSuccess) {
-    dispatch({ type: _authActionTypes.ACTIONS.AUTH_LOGIN_USER_SUCCESS, payload: user });
-    onLoginSuccess(user);
-};
-
-var validateInput = function validateInput(dispatch, _ref3) {
-    var email = _ref3.email,
-        password = _ref3.password;
-
-    var validated = true;
-    var regex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-
-    if (!regex.test(email)) {
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMAIL_FORMAT_ERROR, payload: "Formato de email incorreto" });
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_ERROR, payload: "Formato de email incorreto" });
-        validated = false;
-    }
-
-    if (password === '') {
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_EMPTY_PASSWORD_ERROR, payload: "Senha invalida" });
-        dispatch({ type: _authActionTypes.ACTIONS.AUTH_ERROR, payload: "Senha invalida" });
-        validated = false;
-    }
-    return validated;
-};
-
-var checkPasswordMatch = function checkPasswordMatch(_ref4) {
-    var password = _ref4.password,
-        rePassword = _ref4.rePassword;
-
-    return password === rePassword;
-};
 
 /***/ }),
 /* 34 */
@@ -2999,6 +3000,8 @@ var _Http = __webpack_require__(35);
 
 var _Http2 = _interopRequireDefault(_Http);
 
+var _auth = __webpack_require__(17);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -3025,6 +3028,7 @@ var Auth = function (_Component) {
                 'client': this.props.client,
                 'admin-version': this.props.appVersion
             });
+            this.props.isUserInLocalStorage(this.props.onLoginFail);
         }
     }, {
         key: 'render',
@@ -3054,7 +3058,7 @@ var mapStateToProps = function mapStateToProps(_ref) {
         isAuthenticated: auth.isAuthenticated
     };
 };
-exports.default = (0, _reactRedux.connect)(mapStateToProps)(Auth);
+exports.default = (0, _reactRedux.connect)(mapStateToProps, _auth.isUserInLocalStorage)(Auth);
 
 /***/ }),
 /* 38 */
@@ -3068,7 +3072,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Prompt", function() { return __WEBPACK_IMPORTED_MODULE_1__Prompt__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__Redirect__ = __webpack_require__(48);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Redirect", function() { return __WEBPACK_IMPORTED_MODULE_2__Redirect__["a"]; });
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Route__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Route__ = __webpack_require__(22);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Route", function() { return __WEBPACK_IMPORTED_MODULE_3__Route__["a"]; });
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__Router__ = __webpack_require__(12);
 /* harmony reexport (binding) */ __webpack_require__.d(__webpack_exports__, "Router", function() { return __WEBPACK_IMPORTED_MODULE_4__Router__["a"]; });
@@ -3182,7 +3186,7 @@ MemoryRouter.propTypes = {
 
 var emptyFunction = __webpack_require__(8);
 var invariant = __webpack_require__(9);
-var warning = __webpack_require__(17);
+var warning = __webpack_require__(18);
 var assign = __webpack_require__(41);
 
 var ReactPropTypesSecret = __webpack_require__(10);
@@ -3829,7 +3833,7 @@ module.exports = shouldUseNative() ? Object.assign : function (target, source) {
 
 if (process.env.NODE_ENV !== 'production') {
   var invariant = __webpack_require__(9);
-  var warning = __webpack_require__(17);
+  var warning = __webpack_require__(18);
   var ReactPropTypesSecret = __webpack_require__(10);
   var loggedTypeFailures = {};
 }
@@ -4133,11 +4137,11 @@ exports.locationsAreEqual = exports.createLocation = undefined;
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _resolvePathname = __webpack_require__(18);
+var _resolvePathname = __webpack_require__(19);
 
 var _resolvePathname2 = _interopRequireDefault(_resolvePathname);
 
-var _valueEqual = __webpack_require__(19);
+var _valueEqual = __webpack_require__(20);
 
 var _valueEqual2 = _interopRequireDefault(_valueEqual);
 
@@ -4534,7 +4538,7 @@ Redirect.contextTypes = {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__LocationUtils__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__PathUtils__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__createTransitionManager__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__DOMUtils__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__DOMUtils__ = __webpack_require__(21);
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
@@ -4838,7 +4842,7 @@ var createBrowserHistory = function createBrowserHistory() {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__LocationUtils__ = __webpack_require__(6);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__PathUtils__ = __webpack_require__(5);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_4__createTransitionManager__ = __webpack_require__(13);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__DOMUtils__ = __webpack_require__(20);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_5__DOMUtils__ = __webpack_require__(21);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 
@@ -6042,9 +6046,9 @@ Switch.propTypes = {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_hoist_non_react_statics__ = __webpack_require__(22);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_hoist_non_react_statics__ = __webpack_require__(23);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2_hoist_non_react_statics___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_2_hoist_non_react_statics__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Route__ = __webpack_require__(21);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__Route__ = __webpack_require__(22);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
@@ -6088,7 +6092,7 @@ var withRouter = function withRouter(Component) {
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_react___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0_react__);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types__ = __webpack_require__(3);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_prop_types___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_1_prop_types__);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_PropTypes__ = __webpack_require__(23);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_PropTypes__ = __webpack_require__(24);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__utils_warning__ = __webpack_require__(15);
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
@@ -6269,7 +6273,7 @@ var Subscription = function () {
 
 "use strict";
 /* unused harmony export createConnect */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_connectAdvanced__ = __webpack_require__(24);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__components_connectAdvanced__ = __webpack_require__(25);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__utils_shallowEqual__ = __webpack_require__(61);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__mapDispatchToProps__ = __webpack_require__(62);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_3__mapStateToProps__ = __webpack_require__(78);
@@ -6424,8 +6428,8 @@ function shallowEqual(objA, objB) {
 /* unused harmony export whenMapDispatchToPropsIsFunction */
 /* unused harmony export whenMapDispatchToPropsIsMissing */
 /* unused harmony export whenMapDispatchToPropsIsObject */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_redux__ = __webpack_require__(25);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__wrapMapToProps__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0_redux__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__wrapMapToProps__ = __webpack_require__(32);
 
 
 
@@ -6452,7 +6456,7 @@ function whenMapDispatchToPropsIsObject(mapDispatchToProps) {
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Symbol_js__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Symbol_js__ = __webpack_require__(28);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__getRawTag_js__ = __webpack_require__(66);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__objectToString_js__ = __webpack_require__(67);
 
@@ -6512,14 +6516,14 @@ var freeGlobal = typeof global == 'object' && global && global.Object === Object
 
 /* harmony default export */ __webpack_exports__["a"] = (freeGlobal);
 
-/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(28)))
+/* WEBPACK VAR INJECTION */}.call(__webpack_exports__, __webpack_require__(29)))
 
 /***/ }),
 /* 66 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Symbol_js__ = __webpack_require__(27);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__Symbol_js__ = __webpack_require__(28);
 
 
 /** Used for built-in method references. */
@@ -6710,7 +6714,7 @@ if (typeof self !== 'undefined') {
 
 var result = (0, _ponyfill2['default'])(root);
 exports['default'] = result;
-/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(28), __webpack_require__(73)(module)))
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(29), __webpack_require__(73)(module)))
 
 /***/ }),
 /* 73 */
@@ -6775,9 +6779,9 @@ function symbolObservablePonyfill(root) {
 
 "use strict";
 /* WEBPACK VAR INJECTION */(function(process) {/* harmony export (immutable) */ __webpack_exports__["a"] = combineReducers;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__createStore__ = __webpack_require__(26);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__createStore__ = __webpack_require__(27);
 /* harmony import */ var __WEBPACK_IMPORTED_MODULE_1_lodash_es_isPlainObject__ = __webpack_require__(16);
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_warning__ = __webpack_require__(29);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_2__utils_warning__ = __webpack_require__(30);
 
 
 
@@ -6970,7 +6974,7 @@ function bindActionCreators(actionCreators, dispatch) {
 
 "use strict";
 /* harmony export (immutable) */ __webpack_exports__["a"] = applyMiddleware;
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compose__ = __webpack_require__(30);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__compose__ = __webpack_require__(31);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 
@@ -7027,7 +7031,7 @@ function applyMiddleware() {
 "use strict";
 /* unused harmony export whenMapStateToPropsIsFunction */
 /* unused harmony export whenMapStateToPropsIsMissing */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__wrapMapToProps__ = __webpack_require__(31);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__wrapMapToProps__ = __webpack_require__(32);
 
 
 function whenMapStateToPropsIsFunction(mapStateToProps) {
@@ -7051,7 +7055,7 @@ function whenMapStateToPropsIsMissing(mapStateToProps) {
 /* unused harmony export wrapMergePropsFunc */
 /* unused harmony export whenMergePropsIsFunction */
 /* unused harmony export whenMergePropsIsOmitted */
-/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_verifyPlainObject__ = __webpack_require__(32);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__utils_verifyPlainObject__ = __webpack_require__(33);
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
 
@@ -7256,7 +7260,7 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRedux = __webpack_require__(7);
 
-var _authAction = __webpack_require__(33);
+var _authAction = __webpack_require__(17);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -7400,7 +7404,7 @@ var _react2 = _interopRequireDefault(_react);
 
 var _reactRedux = __webpack_require__(7);
 
-var _authAction = __webpack_require__(33);
+var _authAction = __webpack_require__(17);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
@@ -7478,7 +7482,7 @@ Object.defineProperty(exports, "__esModule", {
     value: true
 });
 
-var _redux = __webpack_require__(25);
+var _redux = __webpack_require__(26);
 
 var _authReducer = __webpack_require__(86);
 
