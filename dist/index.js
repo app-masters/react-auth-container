@@ -3030,7 +3030,7 @@ var Auth = function (_Component) {
             });
             console.log(this.props.onLoginFail);
             console.log(this.props.onLoginSuccess);
-            // this.props.isUserInLocalStorage(this.props.onLoginSuccess, this.props.onLoginFail)
+            this.props.isUserInLocalStorage(this.props.onLoginSuccess, this.props.onLoginFail);
         }
     }, {
         key: 'render',
@@ -3060,7 +3060,15 @@ var mapStateToProps = function mapStateToProps(_ref) {
         isAuthenticated: auth.isAuthenticated
     };
 };
-exports.default = (0, _reactRedux.connect)(mapStateToProps, _auth.isUserInLocalStorage)(Auth);
+var mapActions = function mapActions(dispatch) {
+    return {
+        isUserAuthenticated: function isUserAuthenticated(onLoginSuccess, onLoginFail) {
+            return dispatch((0, _auth.isUserInLocalStorage)(onLoginSuccess, onLoginFail));
+        }
+    };
+};
+
+exports.default = (0, _reactRedux.connect)(mapStateToProps, mapActions)(Auth);
 
 /***/ }),
 /* 38 */

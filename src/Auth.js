@@ -15,7 +15,7 @@ class Auth extends Component {
         });
         console.log(this.props.onLoginFail)
         console.log(this.props.onLoginSuccess)
-        // this.props.isUserInLocalStorage(this.props.onLoginSuccess, this.props.onLoginFail)
+        this.props.isUserInLocalStorage(this.props.onLoginSuccess, this.props.onLoginFail)
     }
     render () {
         return (
@@ -36,4 +36,8 @@ const mapStateToProps = ({auth}) => {
         isAuthenticated: auth.isAuthenticated
     };
 };
-export default connect(mapStateToProps, isUserInLocalStorage)(Auth);
+const mapActions = (dispatch) => ({
+    isUserAuthenticated: (onLoginSuccess, onLoginFail) => dispatch(isUserInLocalStorage(onLoginSuccess, onLoginFail))    
+})
+
+export default connect(mapStateToProps, mapActions)(Auth);
