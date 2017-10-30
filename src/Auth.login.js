@@ -6,6 +6,7 @@ class Login extends Component {
     constructor (props) {
         super(props);
         this._handleEnterPress = this._handleEnterPress.bind(this);
+        // console.log('props', props);
     }
     componentWillMount () {
         document.addEventListener("keydown", this._handleEnterPress);
@@ -16,6 +17,7 @@ class Login extends Component {
     }
 
     _handleEnterPress (e) {
+        // console.log(this.props);
         if (e.key === "Enter") {
             const { email, password } = this.props.input;
             this.props.loginUser({ email, password }, this.props.onLoginSuccess, this.props.onLoginFail);

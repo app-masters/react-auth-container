@@ -97,6 +97,12 @@ export default (state = INITIAL_STATE, action) => {
             ...state,
             passwordMatchError: action.payload
         };
+    case ACTIONS.AUTH_ERROR:
+        return {
+            ...state,
+            error: action.payload,
+            loading: false
+        };
     default:
         return state;
     }
