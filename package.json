@@ -1,11 +1,11 @@
 {
-  "name": "auth-appmasters",
-  "version": "1.0.0",
-  "description": "auth component made by matheus",
+  "name": "@app-masters/react-auth-container",
+  "version": "1.0.1",
+  "description": "auth component",
   "main": "dist/index.js",
   "scripts": {
-    "build": "rm -rf dist/ && webpack",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "build": "rm -rf dist/ && babel src/ -d dist",
+    "postinstall": "npm run build"
   },
   "author": "Matheus",
   "license": "MIT",
