@@ -20,7 +20,7 @@ class Login extends Component {
         // console.log(this.props);
         if (e.key === "Enter") {
             const { email, password } = this.props.input;
-            this.props.loginUser({ email, password }, this.props.onLoginSuccess, this.props.onLoginFail);
+            this.props.loginUser({ email, password }, this.props.onLoginSuccess, this.props.onLoginFail, this.props.multipleLogin);
         }
     }
     render () {

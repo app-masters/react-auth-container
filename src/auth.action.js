@@ -6,7 +6,7 @@ export const inputChanged = (id, value) => {
     return {type: ACTIONS.AUTH_INPUT_CHANGED, payload: {id: id, value: value}};
 };
 
-export const loginUser = ({email, password}, onLoginSuccess, onLoginFail) => {
+export const loginUser = ({email, password}, onLoginSuccess, onLoginFail, multipleLogin) => {
     return (dispatch, getState) => {
         removeErrors(dispatch);
         if (!validateInput(dispatch, {email, password})) {
@@ -17,7 +17,16 @@ export const loginUser = ({email, password}, onLoginSuccess, onLoginFail) => {
                 email,
                 password
             }).then(response => {
+                console.log('resss', response);
                 localStorage.setItem('auth', JSON.stringify(response));
+                if (multipleLogin) {
+                    let allLogins = JSON.parse(window.localStorage.getItem('savedLogins')) || [];
+                    if (!allLogins.find(data => data.user._id === response.user._id)) {
+                        allLogins.push(response);
+                        window.localStorage.setItem('savedLogins', JSON.stringify(allLogins));
+                    }
+                }
+
                 loginUserSuccess(dispatch, response, onLoginSuccess);
             }).catch((error) => {
                 if (error.message === "NoUserFound") {
@@ -35,12 +44,21 @@ export const loginUser = ({email, password}, onLoginSuccess, onLoginFail) => {
     };
 };
 
+export const onUserChange = (user, onLoginSuccess) => {
+    return (dispatch) => {
+        console.log(user);
+        localStorage.setItem('auth', JSON.stringify(user));
+        loginUserSuccess(dispatch, user, onLoginSuccess);
+    };
+};
+
 export const isUserInLocalStorage = (onLoginSuccess, onLoginFail) => {
     return (dispatch) => {
         dispatch({type: ACTIONS.AUTH_IS_USER_AUTHENTICATED});
         removeErrors(dispatch);
-        var data = localStorage.getItem('auth');
-        if (data !== null) {
+        let data = localStorage.getItem('auth');
+        // console.log(data);
+        if (data) {
             data = JSON.parse(data);
             loginUserSuccess(dispatch, data, onLoginSuccess);
         } else {
@@ -89,6 +107,7 @@ const loginUserFail = (dispatch, error, onLoginFail) => {
 };
 
 const loginUserSuccess = (dispatch, user, onLoginSuccess) => {
+    console.log('login success');
     dispatch({type: ACTIONS.AUTH_LOGIN_USER_SUCCESS, payload: user});
     onLoginSuccess(user);
 };
