@@ -12,7 +12,7 @@ var _react = require('react');
 
 var _react2 = _interopRequireDefault(_react);
 
-var _Auth = require('./Auth');
+var _Auth = require('./auth');
 
 var _Auth2 = _interopRequireDefault(_Auth);
 
