@@ -3,7 +3,7 @@ import { Route, Redirect } from 'react-router';
 import { connect } from 'react-redux';
 import Login from './auth.login.js';
 import Signup from './auth.signup.js';
-import ChangeUser from './Auth.changeUser.js';
+import ChangeUser from './auth.changeUser.js';
 import Http from './Library/Http';
 import { isUserInLocalStorage } from './auth.action';
 
