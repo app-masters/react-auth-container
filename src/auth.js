@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { Route, Redirect } from 'react-router';
 import { connect } from 'react-redux';
-import Login from './Auth.login.js';
-import Signup from './Auth.signup.js';
+import Login from './auth.login.js';
+import Signup from './auth.signup.js';
 import ChangeUser from './Auth.changeUser.js';
 import Http from './Library/Http';
 import { isUserInLocalStorage } from './auth.action';
+
 class Auth extends Component {
     componentWillMount () {
         Http.setBaseURL(this.props.baseUrl);

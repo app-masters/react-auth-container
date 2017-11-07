@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Auth from './Auth';
+import Auth from './auth';
 import store from './auth.store.js';
 import { Provider } from 'react-redux';
 class AuthContainer extends Component {
