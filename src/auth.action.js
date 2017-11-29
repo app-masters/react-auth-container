@@ -17,7 +17,7 @@ export const loginUser = ({email, password}, onLoginSuccess, onLoginFail, multip
                 email,
                 password
             }).then(response => {
-                console.log('resss', response);
+                // console.log('resss', response);
                 localStorage.setItem('auth', JSON.stringify(response));
                 if (multipleLogin) {
                     let allLogins = JSON.parse(window.localStorage.getItem('savedLogins')) || [];
@@ -46,7 +46,7 @@ export const loginUser = ({email, password}, onLoginSuccess, onLoginFail, multip
 
 export const onUserChange = (user, onLoginSuccess) => {
     return (dispatch) => {
-        console.log(user);
+        // console.log(user);
         localStorage.setItem('auth', JSON.stringify(user));
         loginUserSuccess(dispatch, user, onLoginSuccess);
     };
@@ -107,7 +107,7 @@ const loginUserFail = (dispatch, error, onLoginFail) => {
 };
 
 const loginUserSuccess = (dispatch, user, onLoginSuccess) => {
-    console.log('login success');
+    // console.log('login success');
     dispatch({type: ACTIONS.AUTH_LOGIN_USER_SUCCESS, payload: user});
     onLoginSuccess(user);
 };
