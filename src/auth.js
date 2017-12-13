@@ -4,17 +4,17 @@ import { connect } from 'react-redux';
 import Login from './auth.login.js';
 import Signup from './auth.signup.js';
 import ChangeUser from './auth.changeUser.js';
-import Http from './Library/Http';
+// import {Http} from '@app-masters/js-lib';
 import { isUserInLocalStorage } from './auth.action';
 
 class Auth extends Component {
     componentWillMount () {
-        Http.setBaseURL(this.props.baseUrl);
-        Http.setHeaders({
-            'content-type': 'application/json',
-            'client': this.props.client,
-            'admin-version': this.props.appVersion
-        });
+        // Http.setBaseURL(this.props.baseUrl);
+        // Http.setHeaders({
+        //     'content-type': 'application/json',
+        //     'client': this.props.client,
+        //     'admin-version': this.props.appVersion
+        // });
         // console.log(this.props.onLoginFail);
         // console.log(this.props.onLoginSuccess);
         this.props.isUserAuthenticated(this.props.onLoginSuccess, this.props.onLoginFail);

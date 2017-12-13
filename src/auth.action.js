@@ -1,5 +1,5 @@
 import { ACTIONS } from './auth.actionTypes.js';
-import Http from './Library/Http';
+import {Http} from '@app-masters/js-lib';
 const localStorage = window.localStorage;
 
 export const inputChanged = (id, value) => {

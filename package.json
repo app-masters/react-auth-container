@@ -1,15 +1,15 @@
 {
   "name": "@app-masters/react-auth-container",
-  "version": "1.0.11",
+  "version": "1.0.13",
   "description": "auth component",
   "main": "dist/index.js",
   "scripts": {
     "build": "rm -rf dist/ && babel src/ -d dist",
-    "postinstall": "npm run build"
+    "prepublish": "npm run build"
   },
   "author": "Matheus",
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
     "babel-preset-env": "^1.6.1",
     "immutability-helper": "^2.4.0",
     "keymirror": "^0.1.1",
@@ -23,9 +23,10 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-1": "^6.24.1",
     "imports-loader": "^0.7.1",
-    "webpack": "^3.8.1"
-  },
-  "devDependencies": {
+    "webpack": "^3.8.1",
     "babel-cli": "^6.26.0"
+  },
+  "dependencies": {
+    "@app-masters/js-lib": "^1.0.19"
   }
 }
