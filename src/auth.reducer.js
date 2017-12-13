@@ -2,8 +2,6 @@ import update from 'immutability-helper';
 import { ACTIONS } from './auth.actionTypes.js';
 
 const INITIAL_STATE = {
-  // email: 'admin@appmasters.io',
-  // password: 'reactmasters',
     user: null,
     error: null,
     isAuthenticated: false,
@@ -20,7 +18,6 @@ const INITIAL_STATE = {
 };
 
 export default (state = INITIAL_STATE, action) => {
-    // console.log(action);
     switch (action.type) {
     case ACTIONS.AUTH_INPUT_CHANGED: {
         let obj = {};
