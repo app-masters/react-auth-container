@@ -1,6 +1,6 @@
 {
   "name": "@app-masters/react-auth-container",
-  "version": "1.0.17",
+  "version": "1.0.18",
   "description": "auth component",
   "main": "dist/index.js",
   "scripts": {
