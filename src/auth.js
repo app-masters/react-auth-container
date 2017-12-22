@@ -11,6 +11,7 @@ class Auth extends Component {
     }
     parsePath() {
         let path = this.props.path;
+        if (!path) return '/';
         if(path.indexOf('signup/')>-1)
         {
             path = path.replace('signup/', '');
@@ -35,10 +36,10 @@ class Auth extends Component {
     }
     render () {
         console.log(this.props);
-        this.parsePath();
+        let path = this.parsePath();
         return (
             <div>
-                <Route location={this.props.location} exact path={this.parsePath() || '/'} render={() => (
+                <Route location={this.props.location} exact path={path} render={() => (
                     this.props.isAuthenticated
                         ? <Redirect to={'/'} />
                         : <Login {...this.props} />)}

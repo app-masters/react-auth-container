@@ -35,8 +35,6 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
 function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
-// import {Http} from '@app-masters/js-lib';
-
 
 var Auth = function (_Component) {
     _inherits(Auth, _Component);
@@ -50,25 +48,41 @@ var Auth = function (_Component) {
     _createClass(Auth, [{
         key: 'componentWillMount',
         value: function componentWillMount() {
-            // Http.setBaseURL(this.props.baseUrl);
-            // Http.setHeaders({
-            //     'content-type': 'application/json',
-            //     'client': this.props.client,
-            //     'admin-version': this.props.appVersion
-            // });
-            // console.log(this.props.onLoginFail);
-            // console.log(this.props.onLoginSuccess);
             this.props.isUserAuthenticated(this.props.onLoginSuccess, this.props.onLoginFail);
+        }
+    }, {
+        key: 'parsePath',
+        value: function parsePath() {
+            var path = this.props.path;
+            if (path.indexOf('signup/') > -1) {
+                path = path.replace('signup/', '');
+                console.log('path', path);
+            }
+            if (path.indexOf('signup') > -1) {
+                path = path.replace('signup', '');
+                console.log('path', path);
+            }
+            if (path.indexOf('login/') > -1) {
+                path = path.replace('login/', '');
+                console.log('path', path);
+            }
+            if (path.indexOf('login') > -1) {
+                path = path.replace('login', '');
+                console.log('path', path);
+            }
+            return path;
         }
     }, {
         key: 'render',
         value: function render() {
             var _this2 = this;
 
+            console.log(this.props);
+            this.parsePath();
             return _react2.default.createElement(
                 'div',
                 null,
-                _react2.default.createElement(_reactRouter.Route, { location: this.props.location, exact: true, path: '/', render: function render() {
+                _react2.default.createElement(_reactRouter.Route, { location: this.props.location, exact: true, path: this.parsePath() || '/', render: function render() {
                         return _this2.props.isAuthenticated ? _react2.default.createElement(_reactRouter.Redirect, { to: '/' }) : _react2.default.createElement(_authLogin2.default, _this2.props);
                     }
                 }),
@@ -99,5 +113,4 @@ var mapActions = function mapActions(dispatch) {
         }
     };
 };
-
 exports.default = (0, _reactRedux.connect)(mapStateToProps, mapActions)(Auth);
