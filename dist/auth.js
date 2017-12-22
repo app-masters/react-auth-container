@@ -54,6 +54,7 @@ var Auth = function (_Component) {
         key: 'parsePath',
         value: function parsePath() {
             var path = this.props.path;
+            if (!path) return '/';
             if (path.indexOf('signup/') > -1) {
                 path = path.replace('signup/', '');
                 console.log('path', path);
@@ -78,11 +79,11 @@ var Auth = function (_Component) {
             var _this2 = this;
 
             console.log(this.props);
-            this.parsePath();
+            var path = this.parsePath();
             return _react2.default.createElement(
                 'div',
                 null,
-                _react2.default.createElement(_reactRouter.Route, { location: this.props.location, exact: true, path: this.parsePath() || '/', render: function render() {
+                _react2.default.createElement(_reactRouter.Route, { location: this.props.location, exact: true, path: path, render: function render() {
                         return _this2.props.isAuthenticated ? _react2.default.createElement(_reactRouter.Redirect, { to: '/' }) : _react2.default.createElement(_authLogin2.default, _this2.props);
                     }
                 }),
