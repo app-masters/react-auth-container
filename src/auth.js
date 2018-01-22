@@ -5,8 +5,15 @@ import Login from './auth.login.js';
 import Signup from './auth.signup.js';
 import ChangeUser from './auth.changeUser.js';
 import { isUserInLocalStorage } from './auth.action';
+import {Http} from '@app-masters/js-lib';
 class Auth extends Component {
     componentWillMount () {
+        Http.setBaseURL(this.props.baseUrl);
+        Http.setHeaders({
+            'content-type': 'application/json',
+            'client': this.props.client,
+            'admin-version': this.props.appVersion
+        });
         this.props.isUserAuthenticated(this.props.onLoginSuccess, this.props.onLoginFail);
     }
     parsePath() {

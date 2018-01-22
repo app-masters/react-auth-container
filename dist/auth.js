@@ -28,6 +28,8 @@ var _authChangeUser2 = _interopRequireDefault(_authChangeUser);
 
 var _auth = require('./auth.action');
 
+var _jsLib = require('@app-masters/js-lib');
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -48,6 +50,12 @@ var Auth = function (_Component) {
     _createClass(Auth, [{
         key: 'componentWillMount',
         value: function componentWillMount() {
+            _jsLib.Http.setBaseURL(this.props.baseUrl);
+            _jsLib.Http.setHeaders({
+                'content-type': 'application/json',
+                'client': this.props.client,
+                'admin-version': this.props.appVersion
+            });
             this.props.isUserAuthenticated(this.props.onLoginSuccess, this.props.onLoginFail);
         }
     }, {
