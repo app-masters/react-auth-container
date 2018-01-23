@@ -62,7 +62,7 @@ var onUserChange = exports.onUserChange = function onUserChange(user, onLoginSuc
     return function (dispatch) {
         // console.log(user);
         localStorage.setItem('auth', JSON.stringify(user));
-        loginUserSuccess(dispatch, user, onLoginSuccess);
+        loginUserSuccess(dispatch, user, onLoginSuccess, true);
     };
 };
 
@@ -124,10 +124,10 @@ var loginUserFail = function loginUserFail(dispatch, error, onLoginFail) {
     onLoginFail(error);
 };
 
-var loginUserSuccess = function loginUserSuccess(dispatch, user, onLoginSuccess) {
+var loginUserSuccess = function loginUserSuccess(dispatch, user, onLoginSuccess, push) {
     // console.log('login success');
     dispatch({ type: _authActionTypes.ACTIONS.AUTH_LOGIN_USER_SUCCESS, payload: user });
-    onLoginSuccess(user);
+    onLoginSuccess(user, push);
 };
 
 var removeErrors = function removeErrors(dispatch) {

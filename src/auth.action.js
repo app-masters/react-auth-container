@@ -48,7 +48,7 @@ export const onUserChange = (user, onLoginSuccess) => {
     return (dispatch) => {
         // console.log(user);
         localStorage.setItem('auth', JSON.stringify(user));
-        loginUserSuccess(dispatch, user, onLoginSuccess);
+        loginUserSuccess(dispatch, user, onLoginSuccess, true);
     };
 };
 
@@ -106,10 +106,10 @@ const loginUserFail = (dispatch, error, onLoginFail) => {
     onLoginFail(error);
 };
 
-const loginUserSuccess = (dispatch, user, onLoginSuccess) => {
+const loginUserSuccess = (dispatch, user, onLoginSuccess, push) => {
     // console.log('login success');
     dispatch({type: ACTIONS.AUTH_LOGIN_USER_SUCCESS, payload: user});
-    onLoginSuccess(user);
+    onLoginSuccess(user, push);
 };
 
 const removeErrors = (dispatch) => {
